@@ -109,25 +109,6 @@ describe 'mysql_grant' do
     end
   end
 
-  describe 'adding privileges with invalid name' do
-    it 'should fail' do
-      pp = <<-EOS
-        mysql_user { 'test2@tester':
-          ensure => present,
-        }
-        mysql_grant { 'test':
-          ensure     => 'present',
-          table      => 'test.*',
-          user       => 'test2@tester',
-          privileges => ['SELECT', 'UPDATE'],
-          require    => Mysql_user['test2@tester'],
-        }
-      EOS
-
-      expect(apply_manifest(pp, :expect_failures => true).stderr).to match(/name must match user and table parameters/)
-    end
-  end
-
   describe 'adding option' do
     it 'should work without errors' do
       pp = <<-EOS
@@ -413,13 +394,14 @@ describe 'mysql_grant' do
   describe 'adding procedure privileges' do
     it 'should work without errors' do
       pp = <<-EOS
-        if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemmajrelease, '16.00') > 0 {
+        if ($::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemmajrelease, '16.00') > 0) or ($::operatingsystem == 'SLES'){
           exec { 'simpleproc-create':
             command => 'mysql --user="root" --password="password" --database=mysql --delimiter="//" -NBe "CREATE PROCEDURE simpleproc (OUT param1 INT) BEGIN SELECT COUNT(*) INTO param1 FROM t; end//"',
             path    => '/usr/bin/',
             before  => Mysql_user['test2@tester'],
           }
         }
+
         mysql_user { 'test2@tester':
           ensure => present,
         }
