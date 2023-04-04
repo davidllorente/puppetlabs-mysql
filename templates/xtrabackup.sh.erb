@@ -6,6 +6,12 @@
 #
 # A wrapper for Xtrabackup
 #
+
+#We want the script to instantly exit with a non-zero code if any of the remaining commands fails
+set -e
+#Even if they use pipes
+set -o pipefail
+
 <% if @prescript -%>
   <%- [@prescript].flatten.compact.each do |script| %>
 <%= script %>
@@ -13,15 +19,12 @@
 <% end -%>
 
 <%- _innobackupex_args = '' -%>
-
 <%- if @backupuser and @backuppassword -%>
   <%- _innobackupex_args = '--user="' + @backupuser + '" --password="' + @backuppassword + '"' -%>
 <%- end -%>
-
 <%- if @backupdatabases and @backupdatabases.is_a?(Array) and !@backupdatabases.empty? -%>
   <%- _innobackupex_args = _innobackupex_args + ' --databases="' + @backupdatabases.join(' ') + '"' -%>
 <%- end -%>
-
 <%- if @optional_args and @optional_args.is_a?(Array) -%>
   <%- @optional_args.each do |arg| -%>
     <%- _innobackupex_args = _innobackupex_args + ' ' + arg -%>
@@ -35,3 +38,4 @@ innobackupex <%= _innobackupex_args %> "$@"
 <%= script %>
   <%- end -%>
 <% end -%>
+
