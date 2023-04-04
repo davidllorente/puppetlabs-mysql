@@ -46,18 +46,18 @@ class mysql::backup::xtrabackup (
     }
   }
 
-  $xtrabackup-weekly-cmd = "/usr/local/sbin/xtrabackup.sh ${backupdir}"
-  $xtrabackup-daily-cmd  = "/usr/local/sbin/xtrabackup.sh --incremental ${backupdir} --incremental-basedir ${backupdir}/$(ls -1rt ${backupdir} | tail -1)"
+  $xtrabackup_weekly_cmd = "/usr/local/sbin/xtrabackup.sh ${backupdir}"
+  $xtrabackup_daily_cmd  = "/usr/local/sbin/xtrabackup.sh --incremental ${backupdir} --incremental-basedir ${backupdir}/$(ls -1rt ${backupdir} | tail -1)"
 
   if ($healthcheckio_uuid != '' ) {
     $healthcheckio_curl = "curl -fsS -m 10 --retry 5 -o /dev/null https://hc-ping.com/${healthcheckio_uuid}"
-    $xtrabackup-weekly-cmd = "${healthcheckio_curl}/start || (${xtrabackup-weekly-cmd} && ${healthcheckio_curl})"
-    $xtrabackup-daily-cmd  = "${healthcheckio_curl}/start || (${xtrabackup-daily-cmd} && ${healthcheckio_curl})"
+    $xtrabackup_weekly_cmd = "${healthcheckio_curl}/start || (${xtrabackup_weekly_cmd} && ${healthcheckio_curl})"
+    $xtrabackup_daily_cmd  = "${healthcheckio_curl}/start || (${xtrabackup_daily_cmd} && ${healthcheckio_curl})"
   }
 
   cron { 'xtrabackup-weekly':
     ensure  => $ensure,
-    command => $xtrabackup-weekly-cmd,
+    command => $xtrabackup_weekly_cmd,
     user    => 'root',
     hour    => $time[0],
     minute  => $time[1],
@@ -67,7 +67,7 @@ class mysql::backup::xtrabackup (
 
   cron { 'xtrabackup-daily':
     ensure  => $ensure,
-    command => $xtrabackup-daily-cmd,
+    command => $xtrabackup_daily_cmd,
     user    => 'root',
     hour    => $time[0],
     minute  => $time[1],
